@@ -7,14 +7,16 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:site_report_automation_app/data/service/s3_service.dart';
 import 'package:site_report_automation_app/domain/extension/string_extension.dart';
 import 'package:site_report_automation_app/domain/models/note_model.dart';
 import 'package:site_report_automation_app/domain/models/report_model.dart';
 
 class ReportActionsViewmodel extends ChangeNotifier {
-  ReportActionsViewmodel({required this.asyncPrefs});
+  ReportActionsViewmodel({required this.asyncPrefs, required this.s3Service});
 
   final SharedPreferencesAsync asyncPrefs;
+  final S3Service s3Service;
 
   Future<Uint8List> generatePdf({required ReportModel reportModel}) async {
     final pdf = pw.Document();
@@ -419,4 +421,60 @@ class ReportActionsViewmodel extends ChangeNotifier {
           }).toList(),
     );
   }
+
+  Future<bool> isFirstLaunch() async {
+    final firstLaunch = await asyncPrefs.getBool('first_launch') ?? true;
+    if (firstLaunch) {
+      await asyncPrefs.setBool('first_launch', false);
+    }
+    return firstLaunch;
+  }
+
+  Future<List<String>> getLatestPdfKeys() async {
+    return await s3Service.listLatestPdfs(limit: 5);
+  }
+
+  Future<void> uploadPdfToS3(Uint8List pdfBytes, String key) async {
+    await s3Service.uploadPdf(key, pdfBytes);
+  }
+
+  /// Upload metadata JSON for a report alongside the PDF on S3.
+  Future<void> uploadReportMetadataToS3({required ReportModel reportModel, required String pdfFileName}) async {
+    try {
+      final baseName = pdfFileName.replaceAll(RegExp(r'\.pdf\$'), '');
+      final metadataKey = '$baseName.json';
+      final jsonMap = reportModel.toJson();
+      await s3Service.uploadJson(metadataKey, jsonMap);
+    } catch (e) {
+      if (kDebugMode) print('uploadReportMetadataToS3 failed: $e');
+    }
+  }
+
+  /// Fetch latest S3 items (pdf key + optional ReportModel parsed from metadata).
+  Future<List<S3ReportItem>> getLatestS3ReportItems({int limit = 5}) async {
+    final keys = await s3Service.listLatestPdfs(limit: limit);
+    final List<S3ReportItem> items = [];
+    for (final key in keys) {
+      ReportModel? model;
+      try {
+        final baseName = key.replaceAll(RegExp(r'\.pdf\$'), '');
+        final metadataKey = '$baseName.json';
+        final jsonMap = await s3Service.downloadJson(metadataKey);
+        if (jsonMap != null) {
+          model = ReportModel.fromJson(jsonMap);
+        }
+      } catch (e) {
+        if (kDebugMode) print('failed to fetch metadata for $key : $e');
+      }
+      items.add(S3ReportItem(key: key, reportModel: model));
+    }
+    return items;
+  }
+}
+
+class S3ReportItem {
+  final String key;
+  final ReportModel? reportModel;
+
+  S3ReportItem({required this.key, this.reportModel});
 }

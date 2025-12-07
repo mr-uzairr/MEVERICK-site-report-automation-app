@@ -251,6 +251,22 @@ class _EditPdfScreenState extends State<EditPdfScreen> {
 
                     await savedPdfFile.writeAsBytes(pdfBytes);
 
+                    // Upload to S3
+                    try {
+                      await reportActionsViewModel.uploadPdfToS3(pdfBytes, pdfFileName);
+                      // Upload metadata JSON alongside PDF so we can reconstruct report UI
+                      try {
+                        await reportActionsViewModel.uploadReportMetadataToS3(reportModel: _reportModel, pdfFileName: pdfFileName);
+                      } catch (e) {
+                        if (kDebugMode) print('Failed to upload metadata to S3: $e');
+                      }
+                    } catch (e) {
+                      if (kDebugMode) {
+                        print('Failed to upload to S3: $e');
+                      }
+                      // Don't fail the save if S3 upload fails
+                    }
+
                     // Saving PDf File Path to Report Model
                     setState(() {
                       _reportModel = _reportModel.copyWith(

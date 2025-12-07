@@ -202,7 +202,11 @@ class _PreviewPdfScreenState extends State<PreviewPdfScreen> {
         padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 30.0),
         child: ThemedElevatedButton(
           onPressed: (() {
-            context.go(ScreenRoutes.reportActionsScreenRoute);
+            Future.microtask(() {
+              if (context.mounted) {
+                context.go(ScreenRoutes.reportActionsScreenRoute);
+              }
+            });
           }),
           child: const Text(
             'Return to Home Page',
@@ -212,9 +216,11 @@ class _PreviewPdfScreenState extends State<PreviewPdfScreen> {
       ),
       body: PopScope(
         onPopInvokedWithResult: (didPop, result) {
-          if (context.mounted) {
-            context.go(ScreenRoutes.reportActionsScreenRoute);
-          }
+          Future.microtask(() {
+            if (context.mounted) {
+              context.go(ScreenRoutes.reportActionsScreenRoute);
+            }
+          });
         },
         child: PdfPreview(
           build: (_) async {
