@@ -7,6 +7,7 @@ class ReportModel {
     required this.issue,
     required this.clientName,
     required this.address,
+    required this.phoneNumber,
     required this.date,
     required this.noteList,
     required this.recommendedServices,
@@ -14,7 +15,7 @@ class ReportModel {
     required this.pdfFilePath,
   });
 
-  final String? jobName, issue, clientName, address, date;
+  final String? jobName, issue, clientName, address, phoneNumber, date;
   final List<NoteModel> noteList;
   final String? recommendedServices, additionalNotes;
   final String? pdfFilePath;
@@ -25,6 +26,7 @@ class ReportModel {
     String? issue,
     String? clientName,
     String? address,
+    String? phoneNumber,
     String? date,
     List<NoteModel>? noteList,
     String? recommendedServices,
@@ -36,6 +38,7 @@ class ReportModel {
       issue: issue ?? this.issue,
       clientName: clientName ?? this.clientName,
       address: address ?? this.address,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       date: date ?? this.date,
       noteList: noteList ?? this.noteList,
       recommendedServices: recommendedServices?? this.recommendedServices,
@@ -52,6 +55,7 @@ class ReportModel {
         issue: json['issue'] as String?,
         clientName: json['clientName'] as String?,
         address: json['address'] as String?,
+        phoneNumber: json['phoneNumber'] as String?,
         date: json['date'] as String?,
         noteList: (json['noteList'] as List).map((element) => NoteModel.fromJson(element)).toList(),
         recommendedServices: json['recommendedServices'] as String?,
@@ -67,6 +71,7 @@ class ReportModel {
     'issue': issue,
     'clientName': clientName,
     'address': address,
+    'phoneNumber': phoneNumber,
     'date': date,
     'noteList': noteList.map((noteModel) => noteModel.toJson()).toList(),
     'recommendedServices': recommendedServices,

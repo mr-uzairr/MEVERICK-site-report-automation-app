@@ -1,7 +1,7 @@
 class ApiConstants {
 
   static const String baseUrl = 'https://api.openai.com/v1/chat/completions';
-  static const String api = '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';
+  static const String api = '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';
   static const String aIModelName = 'gpt-4.1';
 
   static const Map<String, String> headers = {

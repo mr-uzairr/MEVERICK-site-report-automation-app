@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:site_report_automation_app/domain/extension/string_extension.dart';
@@ -17,6 +19,10 @@ class ReportActionsViewmodel extends ChangeNotifier {
   Future<Uint8List> generatePdf({required ReportModel reportModel}) async {
     final pdf = pw.Document();
 
+    // Load the header logo
+    final logoBytes = await rootBundle.load('assets/icons/header_logo.jpeg');
+    final logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+
     final noteListWidget = await _buildNoteListUIInPdf(reportModel.noteList);
 
     final recommendedServicesBulletList = (reportModel.recommendedServices ?? '').toBulletStringList();
@@ -26,6 +32,190 @@ class ReportActionsViewmodel extends ChangeNotifier {
       pw.MultiPage(
         build:
             (context) => [
+              // Header with Logo and User Information
+              pw.Container(
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: PdfColors.black, width: 2),
+                ),
+                child: pw.Column(
+                  children: [
+                    // Logo Section
+                    pw.Container(
+                      width: double.infinity,
+                      padding: pw.EdgeInsets.all(10),
+                      child: pw.Center(
+                        child: pw.Image(logoImage, width: 400, height: 80, fit: pw.BoxFit.contain),
+                      ),
+                    ),
+                    // Proposal Title and Contact Info Row
+                    pw.Container(
+                      padding: pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      child: pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                        ],
+                      ),
+                    ),
+                    pw.Divider(thickness: 2),
+                    // User Information Section
+                    pw.Container(
+                      padding: pw.EdgeInsets.all(10),
+                      child: pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          // Left Column - Name, Address, Phone
+                          pw.Expanded(
+                            flex: 2,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'Name: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: reportModel.clientName ?? 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(height: 5),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'Address: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: reportModel.address ?? 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(height: 5),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'Phone: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: reportModel.phoneNumber ?? 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(height: 5),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'City: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Right Column - Date and Proposal Number
+                          pw.Expanded(
+                            flex: 1,
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'Date of Proposal: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: reportModel.date ?? 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(height: 5),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'Proposal#: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.SizedBox(height: 5),
+                                pw.RichText(
+                                  text: pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: 'State: ',
+                                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                      ),
+                                      pw.TextSpan(
+                                        text: 'N/A',
+                                        style: pw.TextStyle(fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.Divider(thickness: 2),
+                    // Specifications Section
+                    pw.Container(
+                      padding: pw.EdgeInsets.all(10),
+                      child: pw.Row(
+                        children: [
+                          pw.Expanded(
+                            flex: 3,
+                            child: pw.Text(
+                              'WE HEREBY SUBMIT SPECIFICATIONS AND ESTIMATES FOR',
+                              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                            ),
+                          ),
+                          pw.Expanded(
+                            flex: 2,
+                            child: pw.Text(
+                              reportModel.issue ?? 'N/A',
+                              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
               // Title, Issue and Reference Photos
               pw.Text(
                 'Site Report: ${reportModel.jobName}',
@@ -49,7 +239,7 @@ class ReportActionsViewmodel extends ChangeNotifier {
                   text: text.trim(),
                   style: pw.TextStyle(fontSize: 12),
                 );
-              }).toList(),
+              }),
               pw.SizedBox(height: 20),
               // Additional Notes
               pw.Divider(),
@@ -74,7 +264,7 @@ class ReportActionsViewmodel extends ChangeNotifier {
                     ]
                   )
                 );
-              }).toList(),
+              }),
               pw.SizedBox(height: 20),
               pw.Divider(),
             ],

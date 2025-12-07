@@ -32,11 +32,13 @@ class _NewReportScreenState extends State<NewReportScreen> {
   final _issueTextEditingController = TextEditingController();
   final _clientNameTextEditingController = TextEditingController();
   final _addressTextEditingController = TextEditingController();
+  final _phoneNumberTextEditingController = TextEditingController();
   TextEditingController _dateTextEditingController = TextEditingController();
   String jobName = '';
   String issue = '';
   String clientName = '';
   String address = '';
+  String phoneNumber = '';
   String date = '';
 
   late NewReportViewmodel _newReportViewmodel;
@@ -59,6 +61,10 @@ class _NewReportScreenState extends State<NewReportScreen> {
     // Address
     _addressTextEditingController.addListener(() {
       setState(() => address = _addressTextEditingController.text);
+    });
+    // Phone Number
+    _phoneNumberTextEditingController.addListener(() {
+      setState(() => phoneNumber = _phoneNumberTextEditingController.text);
     });
     // Setting CurrentDate
     final currentDate = DateTime.now();
@@ -88,6 +94,7 @@ class _NewReportScreenState extends State<NewReportScreen> {
     _issueTextEditingController.dispose();
     _clientNameTextEditingController.dispose();
     _addressTextEditingController.dispose();
+    _phoneNumberTextEditingController.dispose();
     _dateTextEditingController.dispose();
     _newReportViewmodel.removeListener(() {});
     if (kDebugMode) {
@@ -175,6 +182,17 @@ class _NewReportScreenState extends State<NewReportScreen> {
                 keyboardType: TextInputType.multiline,
                 minLines: 1,
                 maxLines: 2,
+              ),
+              const SizedBox(height: 20),
+              // Phone Number
+              TextField(
+                controller: _phoneNumberTextEditingController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Phone Number',
+                  labelStyle: TextStyle(color: Colors.blue),
+                ),
+                keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 20),
               // Date
@@ -265,6 +283,7 @@ class _NewReportScreenState extends State<NewReportScreen> {
                                   issue: issue,
                                   clientName: clientName,
                                   address: address,
+                                  phoneNumber: phoneNumber,
                                   date: date,
                                   noteList: _newReportViewmodel.noteList,
                                   recommendedServices:
@@ -383,7 +402,7 @@ class _AddingNoteUIState extends State<AddingNoteUI> {
   final _textDescriptionTextEditingController = TextEditingController();
   String? _textDescription;
 
-  SpeechToText _speechToText = SpeechToText();
+  final SpeechToText _speechToText = SpeechToText();
   String? _recordingText;
   bool _isListening = false;
 
